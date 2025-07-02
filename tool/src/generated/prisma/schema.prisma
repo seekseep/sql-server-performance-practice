@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  Id           Int            @id(map: "PK__Customer__3214EC075A119775") @default(autoincrement())
+  Name         String         @db.NVarChar(100)
+  Address      String         @db.NVarChar(255)
+  Email        String         @unique(map: "UQ__Customer__A9D10534EEE8CB92") @db.NVarChar(100)
+  ShipmentPlan ShipmentPlan[]
+}
+
+model Employee {
+  Id                   Int                    @id(map: "PK__Employee__3214EC07138D7710") @default(autoincrement())
+  Name                 String                 @db.NVarChar(100)
+  ReceivingAchievement ReceivingAchievement[]
+  ShipmentAchievement  ShipmentAchievement[]
+  TreatmentAchievement TreatmentAchievement[]
+}
+
+model Product {
+  Id                 Int                  @id(map: "PK__Product__3214EC0755A9744E") @default(autoincrement())
+  Name               String               @db.NVarChar(100)
+  ProductStock       ProductStock[]
+  ShipmentPlanDetail ShipmentPlanDetail[]
+}
+
+model ProductStock {
+  Id                                                                                         Int                          @id(map: "PK__ProductS__3214EC07C5D6C59F") @default(autoincrement())
+  ProductId                                                                                  Int
+  WarehouseId                                                                                Int
+  Used                                                                                       Int                          @default(0, map: "DF__ProductSto__Used__1B29035F") @db.TinyInt
+  Product                                                                                    Product                      @relation(fields: [ProductId], references: [Id], onUpdate: NoAction, map: "FK__ProductSt__Produ__1C1D2798")
+  Warehouse                                                                                  Warehouse                    @relation(fields: [WarehouseId], references: [Id], onUpdate: NoAction, map: "FK__ProductSt__Wareh__1D114BD1")
+  ReceivingAchievementDetail                                                                 ReceivingAchievementDetail[]
+  ShipmentAchievementDetail                                                                  ShipmentAchievementDetail[]
+  TreatmentAchievementDetail_TreatmentAchievementDetail_ProducedProductStockIdToProductStock TreatmentAchievementDetail[] @relation("TreatmentAchievementDetail_ProducedProductStockIdToProductStock")
+  TreatmentAchievementDetail_TreatmentAchievementDetail_UsedProductStockIdToProductStock     TreatmentAchievementDetail[] @relation("TreatmentAchievementDetail_UsedProductStockIdToProductStock")
+  TreatmentPlanDetail                                                                        TreatmentPlanDetail[]
+}
+
+model ReceivingAchievement {
+  Id                         Int                          @id(map: "PK__Receivin__3214EC07E1E84A99") @default(autoincrement())
+  ReceivedAt                 DateTime                     @default(now(), map: "DF__Receiving__Recei__1FEDB87C") @db.DateTime
+  EmployeeId                 Int
+  Employee                   Employee                     @relation(fields: [EmployeeId], references: [Id], onUpdate: NoAction, map: "FK__Receiving__Emplo__20E1DCB5")
+  ReceivingAchievementDetail ReceivingAchievementDetail[]
+}
+
+model ReceivingAchievementDetail {
+  Id                     Int                  @id(map: "PK__Receivin__3214EC07B2BFD7C3") @default(autoincrement())
+  ReceivingAchievementId Int
+  ProductStockId         Int
+  ProductStock           ProductStock         @relation(fields: [ProductStockId], references: [Id], onUpdate: NoAction, map: "FK__Receiving__Produ__24B26D99")
+  ReceivingAchievement   ReceivingAchievement @relation(fields: [ReceivingAchievementId], references: [Id], onUpdate: NoAction, map: "FK__Receiving__Recei__23BE4960")
+}
+
+model ShipmentAchievement {
+  Id                        Int                         @id(map: "PK__Shipment__3214EC07958C74B3") @default(autoincrement())
+  ShippedAt                 DateTime                    @default(now(), map: "DF__ShipmentA__Shipp__3D7E1B63") @db.DateTime
+  EmployeeId                Int
+  Employee                  Employee                    @relation(fields: [EmployeeId], references: [Id], onUpdate: NoAction, map: "FK__ShipmentA__Emplo__3E723F9C")
+  ShipmentAchievementDetail ShipmentAchievementDetail[]
+}
+
+model ShipmentAchievementDetail {
+  Id                    Int                 @id(map: "PK__Shipment__3214EC077508C14B") @default(autoincrement())
+  ShipmentAchievementId Int
+  ProductStockId        Int
+  ShipmentPlanDetailId  Int
+  ProductStock          ProductStock        @relation(fields: [ProductStockId], references: [Id], onUpdate: NoAction, map: "FK__ShipmentA__Produ__4242D080")
+  ShipmentAchievement   ShipmentAchievement @relation(fields: [ShipmentAchievementId], references: [Id], onUpdate: NoAction, map: "FK__ShipmentA__Shipm__414EAC47")
+  ShipmentPlanDetail    ShipmentPlanDetail  @relation(fields: [ShipmentPlanDetailId], references: [Id], onUpdate: NoAction, map: "FK__ShipmentA__Shipm__4336F4B9")
+}
+
+model ShipmentPlan {
+  Id                 Int                  @id(map: "PK__Shipment__3214EC07A6BA104F") @default(autoincrement())
+  CustomerId         Int
+  Customer           Customer             @relation(fields: [CustomerId], references: [Id], onUpdate: NoAction, map: "FK__ShipmentP__Custo__36D11DD4")
+  ShipmentPlanDetail ShipmentPlanDetail[]
+}
+
+model ShipmentPlanDetail {
+  Id                        Int                         @id(map: "PK__Shipment__3214EC074BD2B457") @default(autoincrement())
+  ShipmentPlanId            Int
+  ProductId                 Int
+  Quantity                  Int
+  ShipmentAchievementDetail ShipmentAchievementDetail[]
+  Product                   Product                     @relation(fields: [ProductId], references: [Id], onUpdate: NoAction, map: "FK__ShipmentP__Produ__3AA1AEB8")
+  ShipmentPlan              ShipmentPlan                @relation(fields: [ShipmentPlanId], references: [Id], onUpdate: NoAction, map: "FK__ShipmentP__Shipm__39AD8A7F")
+}
+
+model TreatmentAchievement {
+  Id                         Int                          @id(map: "PK__Treatmen__3214EC0719F1A9C0") @default(autoincrement())
+  TreatedAt                  DateTime                     @default(now(), map: "DF__Treatment__Treat__2D47B39A") @db.DateTime
+  EmployeeId                 Int
+  Employee                   Employee                     @relation(fields: [EmployeeId], references: [Id], onUpdate: NoAction, map: "FK__Treatment__Emplo__2E3BD7D3")
+  TreatmentAchievementDetail TreatmentAchievementDetail[]
+}
+
+model TreatmentAchievementDetail {
+  Id                                                                           Int                  @id(map: "PK__Treatmen__3214EC072E43E40B") @default(autoincrement())
+  TreatmentAchievementId                                                       Int
+  TreatmentPlanDetailId                                                        Int
+  UsedProductStockId                                                           Int
+  ProducedProductStockId                                                       Int
+  ProductStock_TreatmentAchievementDetail_ProducedProductStockIdToProductStock ProductStock         @relation("TreatmentAchievementDetail_ProducedProductStockIdToProductStock", fields: [ProducedProductStockId], references: [Id], onUpdate: NoAction, map: "FK__Treatment__Produ__33F4B129")
+  TreatmentAchievement                                                         TreatmentAchievement @relation(fields: [TreatmentAchievementId], references: [Id], onUpdate: NoAction, map: "FK__Treatment__Treat__3118447E")
+  TreatmentPlanDetail                                                          TreatmentPlanDetail  @relation(fields: [TreatmentPlanDetailId], references: [Id], onUpdate: NoAction, map: "FK__Treatment__Treat__320C68B7")
+  ProductStock_TreatmentAchievementDetail_UsedProductStockIdToProductStock     ProductStock         @relation("TreatmentAchievementDetail_UsedProductStockIdToProductStock", fields: [UsedProductStockId], references: [Id], onUpdate: NoAction, map: "FK__Treatment__UsedP__33008CF0")
+}
+
+model TreatmentPlan {
+  Id                  Int                   @id(map: "PK__Treatmen__3214EC077919593D") @default(autoincrement())
+  TreatmentPlanDetail TreatmentPlanDetail[]
+}
+
+model TreatmentPlanDetail {
+  Id                         Int                          @id(map: "PK__Treatmen__3214EC07716E37BC") @default(autoincrement())
+  TreatmentPlanId            Int
+  ProductStockId             Int
+  Quantity                   Int
+  TreatmentAchievementDetail TreatmentAchievementDetail[]
+  ProductStock               ProductStock                 @relation(fields: [ProductStockId], references: [Id], onUpdate: NoAction, map: "FK__Treatment__Produ__2A6B46EF")
+  TreatmentPlan              TreatmentPlan                @relation(fields: [TreatmentPlanId], references: [Id], onUpdate: NoAction, map: "FK__Treatment__Treat__297722B6")
+}
+
+model Warehouse {
+  Id           Int            @id(map: "PK__Warehous__3214EC07C0534506") @default(autoincrement())
+  Name         String         @db.NVarChar(100)
+  ProductStock ProductStock[]
+}

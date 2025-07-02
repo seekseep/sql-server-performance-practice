@@ -1,0 +1,13 @@
+-- パフォーマンス統計を有効化
+SET STATISTICS IO ON;
+SET STATISTICS TIME ON;
+
+-- ID範囲検索
+SELECT
+  Id, Name
+FROM
+  Employee
+WHERE
+  Id BETWEEN 100 AND 200
+ORDER BY
+  Id;
